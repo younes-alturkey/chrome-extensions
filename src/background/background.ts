@@ -1,47 +1,22 @@
-import {
-  getStoredCities,
-  getStoredOptions,
-  setStoredCities,
-  setStoredOptions,
-} from '../utils/storage'
-import { fetchOpenWeatherData } from '../utils/api'
-
-chrome.runtime.onInstalled.addListener(() => {
-  setStoredCities([])
-  setStoredOptions({
-    hasAutoOverlay: false,
-    homeCity: '',
-    tempScale: 'metric',
-  })
-
-  chrome.contextMenus.create({
-    contexts: ['selection'],
-    title: 'Add city to weather extension',
-    id: 'weatherExtension',
-  })
-
-  chrome.alarms.create({
-    periodInMinutes: 60,
-  })
-})
-
-chrome.contextMenus.onClicked.addListener((event) => {
-  getStoredCities().then((cities) => {
-    setStoredCities([...cities, event.selectionText])
-  })
-})
-
-chrome.alarms.onAlarm.addListener(() => {
-  getStoredOptions().then((options) => {
-    if (options.homeCity === '') {
-      return
+/* manifest_version 2 webrequest example, need "webRequest", "webRequestBlocking" and "<all_urls>" in permissions
+chrome.webRequest.onBeforeRequest.addListener(
+  (details) => {
+    const url = details.url
+    const filters = ['googleadservices', 'googlesyndication', 'g.doubleclick']
+    for (const filter of filters) {
+      if (url.indexOf(filter) != -1) {
+        return {
+          cancel: true,
+        }
+      }
     }
-    fetchOpenWeatherData(options.homeCity, options.tempScale).then((data) => {
-      const temp = Math.round(data.main.temp)
-      const symbol = options.tempScale === 'metric' ? '\u2103' : '\u2109'
-      chrome.action.setBadgeText({
-        text: `${temp}${symbol}`,
-      })
-    })
-  })
-})
+    return {
+      cancel: false,
+    }
+  },
+  {
+    urls: ['<all_urls>'],
+  },
+  ['blocking']
+)
+*/
